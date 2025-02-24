@@ -1,0 +1,105 @@
+/* src/styles/components.css */
+@layer components {
+    .btn-primary {
+      @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 
+             transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
+    }
+  
+    .btn-secondary {
+      @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 
+             transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed;
+    }
+  
+    .btn-danger {
+      @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 
+             transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
+    }
+  
+    .input-primary {
+      @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none 
+             focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    }
+  
+    .card {
+      @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6;
+    }
+  
+    .tooltip {
+      @apply absolute z-10 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg 
+             invisible group-hover:visible;
+    }
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .slide-in {
+    animation: slideIn 0.3s ease-in-out;
+  }
+  
+  /* Dark mode */
+  .dark {
+    @apply bg-gray-900 text-white;
+  }
+  
+  .dark .card {
+    @apply bg-gray-800 text-white;
+  }
+  
+  .dark .input-primary {
+    @apply bg-gray-700 border-gray-600 text-white;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-4;
+    }
+  
+    .grid {
+      @apply grid-cols-1;
+    }
+  
+    .hidden-mobile {
+      @apply hidden;
+    }
+  }
+  
+  /* Loading states */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+  
+  .skeleton-text {
+    @apply h-4 bg-gray-200 rounded;
+  }
+  
+  .skeleton-circle {
+    @apply h-12 w-12 bg-gray-200 rounded-full;
+  }
+  
+  /* Transitions */
+  .transition-all {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Scrollbars */
+  .custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100;
+  }
+  
+  .dark .custom-scrollbar {
+    @apply scrollbar-thumb-gray-600 scrollbar-track-gray-800;
+  }

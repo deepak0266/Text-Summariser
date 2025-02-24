@@ -1,0 +1,104 @@
+/* src/styles/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Classes */
+.logo {
+  @apply text-2xl font-bold text-blue-600;
+}
+
+.nav-links a {
+  @apply text-gray-600 hover:text-blue-600 transition-colors;
+}
+
+.active {
+  @apply text-blue-600 font-semibold;
+}
+
+.section {
+  @apply py-12;
+}
+
+.study-content {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+.chatbot-button {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 
+         transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed;
+}
+
+.chatbot-interface {
+  @apply bg-white rounded-lg shadow-lg p-6;
+}
+
+.feature-card {
+  @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow;
+}
+
+.subject-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  @apply flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors;
+}
+
+.switch {
+  @apply relative inline-block w-12 h-6;
+}
+
+.slider {
+  @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 
+         transition-colors duration-200 rounded-full;
+}
+
+.slider:before {
+  @apply content-[''] absolute h-5 w-5 left-0.5 bottom-0.5 bg-white 
+         transition-transform duration-200 rounded-full;
+}
+
+input:checked + .slider {
+  @apply bg-blue-600;
+}
+
+input:checked + .slider:before {
+  @apply transform translate-x-6;
+}
+
+/* Messages */
+.message {
+  @apply mb-4 p-4 rounded-lg;
+}
+
+.message.bot {
+  @apply bg-gray-100;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subject-grid {
+    @apply grid-cols-1;
+  }
+  
+  .nav-links {
+    @apply flex-col items-start;
+  }
+}
+
+/* Loading States */
+.loading {
+  @apply animate-pulse bg-gray-200;
+}
+
+/* Error States */
+.error-message {
+  @apply text-red-500 mb-4;
+}
+
+/* Success States */
+.success-message {
+  @apply text-green-500 mb-4;
+}
