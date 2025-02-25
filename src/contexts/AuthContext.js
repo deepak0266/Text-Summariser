@@ -1,22 +1,30 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../services/firebase';
+import { createContext, useContext, useState, useEffect } from "react";
+import { auth, firestore } from "../services/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  sendPasswordResetEmail,
+  updateEmail as updateAuthEmail,
+  updatePassword as updateAuthPassword
+} from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
+// ✅ AuthContext banana zaroori hai
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+// ✅ useAuth ka sahi export
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
@@ -26,51 +34,62 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (email, password, name) => {
     try {
-      const { user } = await auth.createUserWithEmailAndPassword(email, password);
-      await user.updateProfile({ displayName: name });
-      
-      // Create user document in Firestore
-      await firebase.firestore().collection('users').doc(user.uid).set({
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(firestore, "users", userCredential.user.uid), {
         name,
         email,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: serverTimestamp(),
         subjectsCount: 0
       });
-      
-      return user;
+      return userCredential.user;
     } catch (error) {
       throw new Error(error.message);
     }
   };
 
-  const login = async (email, password, rememberMe) => {
+  const login = async (email, password) => {
     try {
-      if (rememberMe) {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      } else {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-      }
-      const { user } = await auth.signInWithEmailAndPassword(email, password);
-      return user;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential.user;
     } catch (error) {
       throw new Error(error.message);
     }
   };
 
-  const logout = () => {
-    return auth.signOut();
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
-  const resetPassword = (email) => {
-    return auth.sendPasswordResetEmail(email);
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
-  const updateEmail = (email) => {
-    return user.updateEmail(email);
+  const updateEmail = async (email) => {
+    try {
+      if (user) {
+        await updateAuthEmail(user, email);
+      }
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
-  const updatePassword = (password) => {
-    return user.updatePassword(password);
+  const updatePassword = async (password) => {
+    try {
+      if (user) {
+        await updateAuthPassword(user, password);
+      }
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
   const value = {
@@ -89,4 +108,4 @@ export const AuthProvider = ({ children }) => {
       {!loading && children}
     </AuthContext.Provider>
   );
-};
+}

@@ -11,7 +11,7 @@ import Signup from './components/auth/Signup';
 
 // Main Pages
 import Dashboard from './components/dashboard/Dashboard';
-import SubjectView from './components/dashboard/SubjectView';
+import SubjectCard from './components/dashboard/SubjectCard';
 import Settings from './components/settings/Settings';
 
 // Protected Route Component
@@ -57,7 +57,7 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-const PrivateRoute = () => {
+const routes = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -134,4 +134,4 @@ const PrivateRoute = () => {
   );
 };
 
-export default PrivateRoute;
+export default routes;

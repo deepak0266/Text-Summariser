@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { File, FileText, Upload, X } from 'lucide-react';
+import { File, FileText, Upload } from 'lucide-react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
+import { firestore, storage, serverTimestamp } from '../../services/firebase';
+import { collection, query, getDocs, doc, deleteDoc, addDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const DocumentList = () => {
   const { subjectId } = useParams();
@@ -19,19 +22,13 @@ const DocumentList = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const docsRef = firebase.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('subjects')
-          .doc(subjectId)
-          .collection('documents');
-        
-        const snapshot = await docsRef.get();
+        const docsRef = collection(firestore, 'users', user.uid, 'subjects', subjectId, 'documents');
+        const q = query(docsRef);
+        const snapshot = await getDocs(q);
         const fetchedDocs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
         setDocuments(fetchedDocs);
       } catch (err) {
         setError('Failed to fetch documents');
@@ -56,32 +53,20 @@ const DocumentList = () => {
     }
 
     try {
-      // Upload file to Firebase Storage
-      const storageRef = firebase.storage().ref();
-      const fileRef = storageRef.child(`users/${user.uid}/documents/${file.name}`);
-      await fileRef.put(file);
-      const downloadURL = await fileRef.getDownloadURL();
+      const storageRef = ref(storage, `users/${user.uid}/documents/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
 
-      // Add document reference to Firestore
-      const docRef = await firebase.firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('subjects')
-        .doc(subjectId)
-        .collection('documents')
-        .add({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: downloadURL,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          summary: '', // Will be updated after processing
-          status: 'processing'
-        });
+      const docRef = await addDoc(collection(firestore, 'users', user.uid, 'subjects', subjectId, 'documents'), {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: downloadURL,
+        createdAt: serverTimestamp(),
+        summary: '',
+        status: 'processing'
+      });
 
-      // Start text extraction and summarization
-      // This would typically be handled by a Cloud Function
-      // For now, we'll just update the UI
       setDocuments(prev => [...prev, {
         id: docRef.id,
         name: file.name,
@@ -99,15 +84,7 @@ const DocumentList = () => {
 
   const handleDelete = async (docId) => {
     try {
-      await firebase.firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('subjects')
-        .doc(subjectId)
-        .collection('documents')
-        .doc(docId)
-        .delete();
-
+      await deleteDoc(doc(firestore, 'users', user.uid, 'subjects', subjectId, 'documents', docId));
       setDocuments(prev => prev.filter(doc => doc.id !== docId));
     } catch (err) {
       setError('Failed to delete document');

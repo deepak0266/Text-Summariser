@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from "../../contexts/AuthContext";
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card, { CardContent, CardFooter, CardHeader } from '../ui/Card';
@@ -30,7 +30,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password, formData.rememberMe);
+      await login(formData.email, formData.password);
       navigate('/dashboard');
     } catch (err) {
       setError('Failed to login. Please check your credentials.');

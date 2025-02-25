@@ -1,11 +1,12 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext'; // Add AuthProvider to the import
 import Navbar from './components/layout/Navbar';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 import Dashboard from './components/dashboard/Dashboard';
+import DocumentList from "./components/dashboard/DocumentList";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {

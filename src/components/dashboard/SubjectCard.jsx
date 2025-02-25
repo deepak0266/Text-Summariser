@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Trash2, FileText, MoreVertical, Edit } from 'lucide-react';
-import Card from '../ui/Card';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Trash2, FileText, MoreVertical, Edit } from "lucide-react";
+import Card from "../ui/Card";
+import Modal from "../ui/Modal";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
+import { doc, updateDoc } from "firebase/firestore";
+import { firestore } from "../../services/firebase";
 
 const SubjectCard = ({ subject, onDelete }) => {
   const navigate = useNavigate();
@@ -14,20 +16,17 @@ const SubjectCard = ({ subject, onDelete }) => {
   const [editName, setEditName] = useState(subject.name);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Edit subject name
   const handleEdit = async () => {
     setIsLoading(true);
     try {
-      await firebase.firestore()
-        .collection('users')
-        .doc(subject.userId)
-        .collection('subjects')
-        .doc(subject.id)
-        .update({
-          name: editName
-        });
+      const subjectRef = doc(firestore, "users", subject.userId, "subjects", subject.id);
+      await updateDoc(subjectRef, {
+        name: editName,
+      });
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error('Error updating subject:', error);
+      console.error("Error updating subject:", error);
     } finally {
       setIsLoading(false);
     }
@@ -35,12 +34,7 @@ const SubjectCard = ({ subject, onDelete }) => {
 
   return (
     <>
-      <Card 
-        hover 
-        clickable 
-        className="relative group"
-        onClick={() => navigate(`/subjects/${subject.id}`)}
-      >
+      <Card hover clickable className="relative group" onClick={() => navigate(`/subjects/${subject.id}`)}>
         <div className="p-6">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-3">
@@ -51,9 +45,7 @@ const SubjectCard = ({ subject, onDelete }) => {
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                   {subject.name}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  {subject.documentsCount || 0} documents
-                </p>
+                <p className="text-sm text-gray-500">{subject.documentsCount || 0} documents</p>
               </div>
             </div>
 
@@ -101,36 +93,27 @@ const SubjectCard = ({ subject, onDelete }) => {
 
           <div className="mt-4">
             <div className="h-2 bg-gray-200 rounded-full">
-              <div 
+              <div
                 className="h-2 bg-blue-600 rounded-full"
-                style={{ 
+                style={{
                   width: `${(subject.documentsCount || 0) / 4 * 100}%`,
-                  transition: 'width 0.3s ease-in-out'
+                  transition: "width 0.3s ease-in-out",
                 }}
               />
             </div>
-            <p className="mt-2 text-xs text-gray-500">
-              {4 - (subject.documentsCount || 0)} slots remaining
-            </p>
+            <p className="mt-2 text-xs text-gray-500">{4 - (subject.documentsCount || 0)} slots remaining</p>
           </div>
         </div>
       </Card>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Subject"
-      >
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Subject">
         <div className="p-6">
           <p className="text-gray-700">
             Are you sure you want to delete "{subject.name}"? This action cannot be undone.
           </p>
           <div className="mt-6 flex justify-end space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -147,11 +130,7 @@ const SubjectCard = ({ subject, onDelete }) => {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title="Edit Subject"
-      >
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Subject">
         <div className="p-6">
           <Input
             label="Subject Name"
@@ -160,17 +139,10 @@ const SubjectCard = ({ subject, onDelete }) => {
             placeholder="Enter subject name"
           />
           <div className="mt-6 flex justify-end space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleEdit}
-              isLoading={isLoading}
-            >
+            <Button variant="primary" onClick={handleEdit} isLoading={isLoading}>
               Save Changes
             </Button>
           </div>

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from "../../contexts/AuthContext";
 import Button from '../ui/Button';
 import SubjectCard from './SubjectCard';
 import UploadModal from './UploadModal';
+import { collection, getDocs, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore'; // Firebase v9 modular imports
+import { firestore } from '../../services/firebase'; // Firestore instance
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -15,13 +17,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        // Fetch subjects from Firebase
-        const subjectsRef = firebase.firestore()
-          .collection('users')
-          .doc(user.uid)
-          .collection('subjects');
-        
-        const snapshot = await subjectsRef.get();
+        // Fetch subjects from Firestore
+        const subjectsRef = collection(firestore, 'users', user.uid, 'subjects');
+        const snapshot = await getDocs(subjectsRef);
         const fetchedSubjects = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -46,15 +44,11 @@ const Dashboard = () => {
     }
     
     try {
-      const subjectRef = await firebase.firestore()
-        .collection('users')
-        .doc(user.uid)
-        .collection('subjects')
-        .add({
-          name: newSubject.name,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          documentsCount: 0
-        });
+      const subjectRef = await addDoc(collection(firestore, 'users', user.uid, 'subjects'), {
+        name: newSubject.name,
+        createdAt: serverTimestamp(),
+        documentsCount: 0
+      });
 
       const newSubjectData = {
         id: subjectRef.id,
@@ -67,6 +61,19 @@ const Dashboard = () => {
     } catch (err) {
       setError('Failed to create subject');
       console.error('Error creating subject:', err);
+    }
+  };
+
+  const handleDeleteSubject = async (subjectId) => {
+    try {
+      // Firestore se subject delete karna
+      await deleteDoc(doc(firestore, 'users', user.uid, 'subjects', subjectId));
+
+      // UI ko update karna: Deleted subject ko state se remove karna
+      setSubjects(prevSubjects => prevSubjects.filter(subject => subject.id !== subjectId));
+    } catch (err) {
+      setError('Failed to delete subject');
+      console.error('Error deleting subject:', err);
     }
   };
 
@@ -123,7 +130,7 @@ const Dashboard = () => {
             <SubjectCard
               key={subject.id}
               subject={subject}
-              onDelete={() => handleDeleteSubject(subject.id)}
+              onDelete={() => handleDeleteSubject(subject.id)} // handleDeleteSubject function pass kiya gaya hai
             />
           ))}
         </div>
